@@ -46,9 +46,21 @@ pub contract FanxToken {
         return <-create Vault(balance: 10)
     }
 
+    pub resource VaultMinter {
+        pub fun mintTokens(amount: UInt64, recipient: Capability<&AnyResource{Receiver}>) {
+            let recipientRef = recipient.borrow()
+                ?? panic("Could not borrow reciever reference to the vault")
+            FanxToken.totalSupply = FanxToken.totalSupply + amount;
+            recipientRef.deposit(from: <-create Vault(balance: amount));
+        }
+    }
+
     init() {
         self.totalSupply = 1000000;
         let vault <-create Vault(balance: self.totalSupply);
         self.account.save(<-vault, to:/storage/FanxTokenVault)
-    }   
+
+        self.account.save(<-create VaultMinter(), to: /storage FanxTokenMinter);
+        self.account.link<&VaultMinter>(/private/Minter, target: /storage/FanxTokenMinter);
+    }
 }
