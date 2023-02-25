@@ -9,7 +9,7 @@ transaction {
         // Deposit function exported
         let ReceiverRef = account.link<&FanxToken.Vault{FanxToken.Receiver}>(/public/FanxTokenReceiver, target: /storage/FanxTokenVault);
 
-        let BalanceRef = account.link<&FanxToken.Vault{FanxToken.Balance}>(/public/FlowTokenBalance, target: /storage/FanxTokenBalance)
+        let BalanceRef = account.link<&FanxToken.Vault{FanxToken.Balance}>(/public/FanxTokenBalance, target: /storage/FanxTokenVault)
 
         log("References Created")
     }
