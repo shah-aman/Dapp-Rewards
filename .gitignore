@@ -1,3 +1,7 @@
 # Smart contract Gitignore
 
 SmartContract/flow.json
+
+flow-hello-world/node_modules
+
+flow-hello-world/.next
