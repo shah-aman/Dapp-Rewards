@@ -1,20 +1,20 @@
 import FanxToken from 0x3d1a73afefe2d7f8
 
-transaction(amount: UInt64, to: Address) {
-    let sentVault: @FanxToken.Vault;
+transaction(amount: UInt64, address: Address) {
+    let tokenSender: @FanxToken.Vault;
+    let tokenReceiver: &{FanxToken.Receiver}
 
-    prepare(signer: AuthAccount) {
-        let vaultRef = signer.borrow<&FlowToken.Vault>(from: /storage/FanxTokenVault)
-            ?? panic("Could not borrow reference of owner\'s vault");
-        
-        self.sentVault <- vaultRef.withdraw(amount: amount);
+    prepare(account: AuthAccount) {
+        let vaultRef = account.borrow<&FanxToken.Vault>(from: /storage/FanxTokenVault)
+            ?? panic("Could not borrow reference of owner\'s vault") 
+        self.tokenSender <- vaultRef.withdraw(amount: amount);
+        self.tokenReceiver = getAccount(address)
+        .getCapability(/public/FanxTokenReceiver)
+        .borrow<&{FanxToken.Receiver}>()
+            ?? panic("Unable to borrow receiver")
     }
 
-    execute {
-        let receiverRef = getAccount(to)
-            .getCapability(/public/FanxTokenReceiver)
-            .borrow<&FanxToken.Receiver>()
-        
-        receiverRef.deposit(from: <-self.sentVault)
+    execute {        
+        self.tokenReceiver.deposit(from: <-self.tokenSender)
     }
 }
