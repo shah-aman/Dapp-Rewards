@@ -1,0 +1,27 @@
+
+from enum import Enum
+
+class RewardStatus(Enum):
+    REDEEMED = 1
+    NOT_REDEEMED = 2
+    IN_PROGRESS = 3
+    EXPIRED = 4
+
+class Events(Enum):
+    ONBOARDING = 1
+    SOCIAL_MEDIA_TWITTER = 2
+    QR_SCAN = 3
+
+
+ONBOARDING_EVENT = "ONBOARDING"
+SOCIAL_MEDIA_TWITTER_EVENT = "SOCIAL_MEDIA_TWITTER"
+QR_SCAN_EVENT = "QR_SCAN"
+DEFAULT_EVENT = "DEFAULT_EVENT"
+
+
+EVENTS_CONSTANT = {
+    'onboarding': ONBOARDING_EVENT,
+    'twitter': SOCIAL_MEDIA_TWITTER_EVENT,
+    'qr_scan': QR_SCAN_EVENT,
+    'default': DEFAULT_EVENT
+}
