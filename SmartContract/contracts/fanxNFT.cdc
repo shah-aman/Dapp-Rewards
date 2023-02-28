@@ -26,7 +26,11 @@ pub contract FanexNft {
         pub fun getNftUrl(id: UInt64): String?
     }
 
-    pub resource NFTCollection: NFTReceiver {
+    pub resource interface NFTBurner {
+        pub fun withdraw(withdrawID: UInt64): @NFT;
+    }
+
+    pub resource NFTCollection: NFTReceiver, NFTBurner {
         pub var ownedNFTs: @{UInt64: NFT}
 
         init () {
@@ -84,7 +88,6 @@ pub contract FanexNft {
         self.CollectionStoragePath = /storage/nftTutorialCollection
         self.CollectionPublicPath = /public/nftTutorialCollection
         self.MinterStoragePath = /storage/nftTutorialMinter
-
         // initialize the ID count to one
         self.idCount = 1
 
@@ -93,5 +96,6 @@ pub contract FanexNft {
 
         // publish a reference to the Collection in storage
         self.account.link<&{NFTReceiver}>(self.CollectionPublicPath, target: self.CollectionStoragePath)
+        self.account.link<&{NFTBurner}>(/private/nftTutorialCollection, target: self.CollectionStoragePath)
 	}
 }
