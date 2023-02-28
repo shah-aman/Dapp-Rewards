@@ -140,7 +140,7 @@ export default function Home() {
       }
        
       `,
-      args: (arg, t) => [arg(25, t.UInt64), arg("0xb5c96cfc0a3e42a8", t.Address)],
+      args: (arg, t) => [arg(25, t.UInt64), arg("0x18242b040b7d7253", t.Address)],
       payer: fcl.authz,
       proposer: fcl.authz,
       authorizations: [fcl.authz],
