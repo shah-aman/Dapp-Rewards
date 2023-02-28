@@ -15,7 +15,9 @@ class AirDropController(Resource):
         print('airdrop request: ', request_json)
 
         response = AirDropService().assign_token_to_wallet(request_json)
-
+        error_msg = {
+            "status": "error"
+        }
         if response:
 
             return Response(
@@ -23,6 +25,6 @@ class AirDropController(Resource):
                 status=HTTPStatus.OK,
                 content_type='application/json')
         else:
-            return Response(response="Some issue",
+            return Response(response=json.dumps(error_msg),
                         status=HTTPStatus.NOT_FOUND,
                         content_type='application/json')

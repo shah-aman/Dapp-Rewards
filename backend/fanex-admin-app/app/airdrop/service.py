@@ -31,13 +31,20 @@ class AirDropService:
         wallet_address = request_data["wallet_address"]
         no_of_token = request_data["no_of_token"]
 
+        try:
 
-        # audit log
-        self.audit_airdrop(request_data)
+            # audit log
+            self.audit_airdrop(request_data)
 
-        flow_cmd_modified = flow_cmd.format(no_of_token=no_of_token, wallet_address=wallet_address)
+            flow_cmd_modified = flow_cmd.format(no_of_token=no_of_token, wallet_address=wallet_address)
 
-        # call SDK
-        self.run_flow_cmd(flow_cmd_modified)
+            # call SDK
+            self.run_flow_cmd(flow_cmd_modified)
 
-        return "ok"
+        except Exception as e:
+            print('Exception in assign_token_to_wallet: ', e)
+            return
+
+        return {
+            "status": "success"
+        }
