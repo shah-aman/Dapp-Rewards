@@ -148,32 +148,26 @@ export default function Home() {
       import FanexNft from 0x3d1a73afefe2d7f8
       import FanxToken from 0x3d1a73afefe2d7f8
       
-      // This transaction allows the Minter account to mint an NFT
-      // and deposit it into its collection.
-      
       transaction(url: String, amount: UInt64) {
       
-          // The reference to the collection that will be receiving the NFT
           let receiverRef: &{FanexNft.NFTReceiver}
-          // let vaultRef: &{FanxToken.Receiver}
       
           prepare(acct: AuthAccount) {
-              // Get the owner's collection capability and borrow a reference
               self.receiverRef = acct.getCapability<&{FanexNft.NFTReceiver}>(FanexNft.CollectionPublicPath)
                   .borrow()
                   ?? panic("Could not borrow receiver reference")
       
-              // self.vaultRef = account.borrow<&FanxToken.Vault>(from: /storage/FanxTokenVault)
-              //     ?? panic("Could not borrow reference of owner\'s vault");
-              
-          }
-      
-          execute {
-              // Use the minter reference to mint an NFT, which deposits
-              // the NFT into the collection that is sent as a parameter.
               let newNFT <- FanexNft.mintNFT(url: url)
       
               self.receiverRef.deposit(token: <-newNFT)
+              let vaultRef = acct.borrow<&FanxToken.Vault>(from: /storage/FanxTokenVault)
+                  ?? panic("Could not borrow reference of owner\'s vault");
+              let tempValut <- vaultRef.withdraw(amount: amount)
+              destroy tempValut;
+          }
+      
+          execute {
+      
               // let tempVault <- vaultRef.withdraw(amount: amount);
               // destroy tempVault;
       
@@ -189,6 +183,44 @@ export default function Home() {
     });
     const transaction = await fcl.tx(transactionId).onceSealed()
     console.log(transaction)
+  }
+
+  const burnNft = async () => {
+    const transactionId = await fcl.mutate({
+        cadence: `
+        import FanexNft from 0x3d1a73afefe2d7f8
+        import FanxToken from 0x3d1a73afefe2d7f8
+        
+        transaction(id: UInt64, amount: UInt64) {
+        
+        
+            prepare(acct: AuthAccount) {
+                let receiverRef = acct.borrow<&{FanexNft.NFTBurner}>(from: FanexNft.CollectionStoragePath)
+                    ?? panic("Could not borrow receiver reference")
+                let deletedNft <- receiverRef.withdraw(withdrawID: id);
+                destroy deletedNft;
+                let tempVault <- FanxToken.createNonEmptyVault(balance: amount);
+        
+                let vaultRef = acct.borrow<&FanxToken.Vault>(from: /storage/FanxTokenVault)
+                    ?? panic("Could not borrow reference of owner\'s vault");
+                
+                vaultRef.deposit(from: <-tempVault);
+            }
+        
+            execute {
+        
+                log("NFT burned")
+            }
+        }
+        `,
+        args: (arg, t) => [arg(1, t.UInt64), arg(10, t.UInt64)],
+        payer: fcl.authz,
+        proposer: fcl.authz,
+        authorizations: [fcl.authz],
+        limit: 50
+      });
+      const transaction = await fcl.tx(transactionId).onceSealed()
+      console.log(transaction)
   }
 
   const displayNfts = async () => {
@@ -208,6 +240,7 @@ export default function Home() {
         <button onClick={initAccount}>Init Account</button> {/* NEW */}
         <button onClick={mintNft}>Deposit NFT</button> {/* NEW */}
         <button onClick={displayNfts}>Get Nfts</button>
+        <button onClick={burnNft}>Burn Nfts</button>
         <button onClick={fcl.unauthenticate}>Log Out</button>
       </div>
     )
